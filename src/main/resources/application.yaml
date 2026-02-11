@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: vocab-tracker
+  profiles:
+    active: dev
