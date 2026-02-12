@@ -60,7 +60,7 @@ public class WordService {
                         word.getStatus())).toList();
     }
 
-    public List<WordDTO> getDailyReview(int count) {
+    public List<WordDTO> getDailyRepetition(int count) {
         List<WordDTO> allWords = new ArrayList<>(getAllWords());
         allWords.sort(Comparator.comparingInt(wordDto ->
                 getStatusPriority(wordDto.getStatus())));
@@ -83,7 +83,21 @@ public class WordService {
         word.setStatus(newStatus);
     }
 
-    public void removeWord (Word word) {
-        words.remove(word.getOriginal());
+    public void removeWord(String original) {
+        String normalized = original.trim().toLowerCase();
+        if (!words.containsKey(normalized)) {
+            throw new NoSuchElementException("Word not found: " + original);
+        }
+        words.remove(normalized);
+    }
+    public void updateStatus(String original, Status newStatus) {
+        String normalized = original.trim().toLowerCase(Locale.ROOT);
+        Word word = words.get(normalized);
+
+        if (word == null) {
+            throw new NoSuchElementException("Word not found: " + original);
+        }
+
+        word.setStatus(newStatus);
     }
 }

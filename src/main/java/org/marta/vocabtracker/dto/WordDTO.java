@@ -10,7 +10,7 @@ import java.util.List;
 @Getter
 @Setter
 public class WordDTO {
-    String original;
+    private String original;
     private List<String> translations;
     private Status status;
 }
