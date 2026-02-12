@@ -1,7 +1,9 @@
 package org.marta.vocabtracker.model;
 
 public enum Status {
-    KNOWN,
+    NEW,
     REPEAT,
-    UNKNOWN
+    KNOWN,
+    MASTERED
+
 }

@@ -17,6 +17,7 @@ public class Word {
     private List<String> translations;
     private Status status;
     private LocalDateTime createdAt;
+    private int repetition;
 
 
 
