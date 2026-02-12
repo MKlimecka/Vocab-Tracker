@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 
 
 @Service
-public class VocabularyService {
+public class WordService {
 
     private final Map<String, Word> words = new HashMap<>();
     private final Random random = new Random();
@@ -64,10 +64,15 @@ public class VocabularyService {
         List<WordDTO> allWords = new ArrayList<>(getAllWords());
         allWords.sort(Comparator.comparingInt(wordDto ->
                 getStatusPriority(wordDto.getStatus())));
-        Collections.shuffle(allWords, random);
-        return allWords.stream()
-                        .limit(count)
-                        .toList();
+        int reviewPoolSize = Math.min(allWords.size(), count * 3);
+        List<WordDTO> priorityWords = allWords.stream()
+                .limit(reviewPoolSize)
+                .toList();
+        List<WordDTO> shuffled = new ArrayList<>(priorityWords);
+        Collections.shuffle(shuffled, random);
+        return shuffled.stream()
+                .limit(count)
+                .toList();
     }
 
     public void clearAll() {
