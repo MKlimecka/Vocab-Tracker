@@ -3,7 +3,7 @@ package org.marta.vocabtracker.controller;
 import lombok.RequiredArgsConstructor;
 import org.marta.vocabtracker.dto.WordDTO;
 import org.marta.vocabtracker.model.Status;
-import org.marta.vocabtracker.model.Word;
+import org.marta.vocabtracker.model.WordEntity;
 import org.marta.vocabtracker.service.WordService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,10 +19,10 @@ public class WordController {
     private final WordService wordService;
 
     @PostMapping
-    public ResponseEntity<Word> addWord(
+    public ResponseEntity<WordEntity> addWord(
             @RequestParam String word,
             @RequestParam List<String> translations) {
-        Word created = wordService.addWord(word, translations);
+        WordEntity created = wordService.addWord(word, translations);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 

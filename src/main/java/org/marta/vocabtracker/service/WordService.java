@@ -2,7 +2,7 @@ package org.marta.vocabtracker.service;
 
 import org.marta.vocabtracker.dto.WordDTO;
 import org.marta.vocabtracker.model.Status;
-import org.marta.vocabtracker.model.Word;
+import org.marta.vocabtracker.model.WordEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -12,11 +12,11 @@ import java.util.stream.Collectors;
 @Service
 public class WordService {
 
-    private final Map<String, Word> words = new HashMap<>();
+    private final Map<String, WordEntity> words = new HashMap<>();
     private final Random random = new Random();
 
 
-    public Word addWord(String inputWord, List<String> translationsFromAPI) {
+    public WordEntity addWord(String inputWord, List<String> translationsFromAPI) {
         if (inputWord == null || inputWord.isBlank()) {
             throw new IllegalArgumentException("Word cannot be empty");
         }
@@ -26,11 +26,11 @@ public class WordService {
         String normalized = inputWord.trim().toLowerCase(Locale.ROOT);
 
         if (words.containsKey(normalized)) {
-            Word existing = words.get(normalized);
+            WordEntity existing = words.get(normalized);
             existing.setStatus(Status.NEW);
             return existing;
         }
-        Word word = Word.builder()
+        WordEntity word = WordEntity.builder()
                 .id(UUID.randomUUID())
                 .original(normalized)
                 .translations(new ArrayList<>(translationsFromAPI.stream()
@@ -79,7 +79,7 @@ public class WordService {
         words.clear();
     }
 
-    public void updateStatus (Word word, Status newStatus) {
+    public void updateStatus (WordEntity word, Status newStatus) {
         word.setStatus(newStatus);
     }
 
@@ -92,7 +92,7 @@ public class WordService {
     }
     public void updateStatus(String original, Status newStatus) {
         String normalized = original.trim().toLowerCase(Locale.ROOT);
-        Word word = words.get(normalized);
+        WordEntity word = words.get(normalized);
 
         if (word == null) {
             throw new NoSuchElementException("Word not found: " + original);
