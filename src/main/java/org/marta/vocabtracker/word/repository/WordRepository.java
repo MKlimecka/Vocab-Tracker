@@ -1,7 +1,7 @@
-package org.marta.vocabtracker.repository;
+package org.marta.vocabtracker.word.repository;
 
-import org.marta.vocabtracker.model.Status;
-import org.marta.vocabtracker.model.WordEntity;
+import org.marta.vocabtracker.word.model.Status;
+import org.marta.vocabtracker.word.model.WordEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

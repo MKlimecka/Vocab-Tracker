@@ -1,9 +1,9 @@
-package org.marta.vocabtracker.dto;
+package org.marta.vocabtracker.word.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
-import org.marta.vocabtracker.model.Status;
+import org.marta.vocabtracker.word.model.Status;
 
 import java.util.List;
 @AllArgsConstructor

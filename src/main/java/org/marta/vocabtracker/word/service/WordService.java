@@ -1,10 +1,10 @@
-package org.marta.vocabtracker.service;
+package org.marta.vocabtracker.word.service;
 
 import lombok.RequiredArgsConstructor;
-import org.marta.vocabtracker.dto.WordDTO;
-import org.marta.vocabtracker.model.Status;
-import org.marta.vocabtracker.model.WordEntity;
-import org.marta.vocabtracker.repository.WordRepository;
+import org.marta.vocabtracker.word.dto.WordDTO;
+import org.marta.vocabtracker.word.model.Status;
+import org.marta.vocabtracker.word.model.WordEntity;
+import org.marta.vocabtracker.word.repository.WordRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

@@ -1,4 +1,4 @@
-package org.marta.vocabtracker.model;
+package org.marta.vocabtracker.word.model;
 
 public enum Status {
     NEW,

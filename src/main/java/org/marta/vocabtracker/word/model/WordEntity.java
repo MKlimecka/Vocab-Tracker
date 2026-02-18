@@ -1,4 +1,4 @@
-package org.marta.vocabtracker.model;
+package org.marta.vocabtracker.word.model;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
