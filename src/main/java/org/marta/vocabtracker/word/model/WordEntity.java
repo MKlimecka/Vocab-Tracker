@@ -39,6 +39,7 @@ public class WordEntity {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
+    @Column(name = "repetition")
     private int repetition;
 
     @ManyToMany(mappedBy = "words")

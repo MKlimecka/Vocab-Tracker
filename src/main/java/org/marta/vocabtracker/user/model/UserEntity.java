@@ -1,12 +1,20 @@
 package org.marta.vocabtracker.user.model;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.marta.vocabtracker.word.model.WordEntity;
 
 import java.util.*;
 
 @Entity
 @Table(name = "users")
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class UserEntity {
 
     @Id
@@ -23,7 +31,7 @@ public class UserEntity {
     private Role role;
 
     @ManyToMany
-    @JoinTable(name = "user_words", joinColumns = @JoinColumn(name = "word_id"),
+    @JoinTable(name = "user_words", joinColumns = @JoinColumn(name = "user_id"),
     inverseJoinColumns = @JoinColumn(name = "word_id"))
     private Set<WordEntity> words = new HashSet<>();
 
