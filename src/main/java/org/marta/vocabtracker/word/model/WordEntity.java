@@ -5,9 +5,12 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.marta.vocabtracker.user.model.UserEntity;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Entity
@@ -22,7 +25,7 @@ public class WordEntity {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false)
     private String original;
 
     @ElementCollection
@@ -37,4 +40,7 @@ public class WordEntity {
     private LocalDateTime createdAt;
 
     private int repetition;
+
+    @ManyToMany(mappedBy = "words")
+    private Set<UserEntity> users = new HashSet<>();
 }
