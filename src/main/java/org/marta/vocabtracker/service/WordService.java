@@ -1,52 +1,59 @@
 package org.marta.vocabtracker.service;
 
+import lombok.RequiredArgsConstructor;
 import org.marta.vocabtracker.dto.WordDTO;
 import org.marta.vocabtracker.model.Status;
 import org.marta.vocabtracker.model.WordEntity;
+import org.marta.vocabtracker.repository.WordRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
-
 @Service
+@RequiredArgsConstructor
 public class WordService {
 
-    private final Map<String, WordEntity> words = new HashMap<>();
+    private final WordRepository wordRepository;
     private final Random random = new Random();
 
-
+    @Transactional
     public WordEntity addWord(String inputWord, List<String> translationsFromAPI) {
         if (inputWord == null || inputWord.isBlank()) {
             throw new IllegalArgumentException("Word cannot be empty");
         }
         if (translationsFromAPI == null || translationsFromAPI.isEmpty()) {
-            throw new NoSuchElementException(" Word not found");
+            throw new IllegalArgumentException("No translations found for: " + inputWord);
         }
+
         String normalized = inputWord.trim().toLowerCase(Locale.ROOT);
 
-        if (words.containsKey(normalized)) {
-            WordEntity existing = words.get(normalized);
-            existing.setStatus(Status.NEW);
-            return existing;
+        Optional<WordEntity> existing = wordRepository.findByOriginal(normalized);
+        if (existing.isPresent()) {
+            WordEntity word = existing.get();
+            word.setStatus(Status.NEW);
+            return wordRepository.save(word);
         }
+
         WordEntity word = WordEntity.builder()
-                .id(UUID.randomUUID())
                 .original(normalized)
-                .translations(new ArrayList<>(translationsFromAPI.stream()
-                        .map(String :: trim)
-                        .filter(t -> ! t.isBlank())
+                .translations(translationsFromAPI.stream()
+                        .map(String::trim)
+                        .filter(t -> !t.isBlank())
                         .distinct()
-                        .collect(Collectors.toList())))
+                        .collect(Collectors.toList()))
                 .status(Status.NEW)
+                .createdAt(LocalDateTime.now())
+                .repetition(10)
                 .build();
 
-            words.put(normalized, word);
-            return word;
+        return wordRepository.save(word);
     }
 
     public int getStatusPriority(Status status) {
-        return  switch (status) {
+        return switch (status) {
             case NEW -> 1;
             case REPEAT -> 2;
             case KNOWN -> 3;
@@ -54,50 +61,55 @@ public class WordService {
         };
     }
 
-    public List <WordDTO> getAllWords() {
-        return words.values().stream().map(word ->
-                new WordDTO(word.getOriginal(), word.getTranslations(),
-                        word.getStatus())).toList();
+    public List<WordDTO> getAllWords() {
+        return wordRepository.findAll().stream()
+                .map(word -> new WordDTO(
+                        word.getOriginal(),
+                        word.getTranslations(),
+                        word.getStatus()))
+                .toList();
     }
 
     public List<WordDTO> getDailyRepetition(int count) {
         List<WordDTO> allWords = new ArrayList<>(getAllWords());
+
         allWords.sort(Comparator.comparingInt(wordDto ->
                 getStatusPriority(wordDto.getStatus())));
+
         int reviewPoolSize = Math.min(allWords.size(), count * 3);
         List<WordDTO> priorityWords = allWords.stream()
                 .limit(reviewPoolSize)
                 .toList();
+
         List<WordDTO> shuffled = new ArrayList<>(priorityWords);
         Collections.shuffle(shuffled, random);
+
         return shuffled.stream()
                 .limit(count)
                 .toList();
     }
 
+    @Transactional
     public void clearAll() {
-        words.clear();
+        wordRepository.deleteAll();
     }
 
-    public void updateStatus (WordEntity word, Status newStatus) {
-        word.setStatus(newStatus);
-    }
-
-    public void removeWord(String original) {
-        String normalized = original.trim().toLowerCase();
-        if (!words.containsKey(normalized)) {
-            throw new NoSuchElementException("Word not found: " + original);
-        }
-        words.remove(normalized);
-    }
+    @Transactional
     public void updateStatus(String original, Status newStatus) {
         String normalized = original.trim().toLowerCase(Locale.ROOT);
-        WordEntity word = words.get(normalized);
+        WordEntity word = wordRepository.findByOriginal(normalized)
+                .orElseThrow(() -> new NoSuchElementException("Word not found: " + original));
+        word.setStatus(newStatus);
+        word.setRepetition(10);
+        wordRepository.save(word);
+    }
 
-        if (word == null) {
+    @Transactional
+    public void removeWord(String original) {
+        String normalized = original.trim().toLowerCase(Locale.ROOT);
+        if (!wordRepository.existsByOriginal(normalized)) {
             throw new NoSuchElementException("Word not found: " + original);
         }
-
-        word.setStatus(newStatus);
+        wordRepository.deleteByOriginal(normalized);
     }
 }

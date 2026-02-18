@@ -50,4 +50,9 @@ public class WordController {
         wordService.clearAll();
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping
+    public ResponseEntity<List<WordDTO>> getAllWords() {
+        return ResponseEntity.ok(wordService.getAllWords());
+    }
 }
