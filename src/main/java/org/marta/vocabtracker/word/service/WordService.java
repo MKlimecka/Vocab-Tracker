@@ -1,10 +1,14 @@
 package org.marta.vocabtracker.word.service;
 
 import lombok.RequiredArgsConstructor;
+import org.marta.vocabtracker.user.model.UserEntity;
+import org.marta.vocabtracker.user.repository.UserRepository;
 import org.marta.vocabtracker.word.dto.WordDTO;
 import org.marta.vocabtracker.word.model.Status;
 import org.marta.vocabtracker.word.model.WordEntity;
 import org.marta.vocabtracker.word.repository.WordRepository;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,7 +21,15 @@ import java.util.stream.Collectors;
 public class WordService {
 
     private final WordRepository wordRepository;
+    private final UserRepository userRepository;
     private final Random random = new Random();
+
+    private UserEntity getCurrentUser() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String email = auth.getName();
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+    }
 
     @Transactional
     public WordEntity addWord(String inputWord, List<String> translationsFromAPI) {
@@ -25,12 +37,13 @@ public class WordService {
             throw new IllegalArgumentException("Word cannot be empty");
         }
         if (translationsFromAPI == null || translationsFromAPI.isEmpty()) {
-            throw new IllegalArgumentException("No translations found for: " + inputWord);
+            throw new IllegalArgumentException("No translations found");
         }
 
+        UserEntity currentUser = getCurrentUser();
         String normalized = inputWord.trim().toLowerCase(Locale.ROOT);
 
-        Optional<WordEntity> existing = wordRepository.findByOriginal(normalized);
+        Optional<WordEntity> existing = wordRepository.findByOriginalAndUser_Id(normalized, currentUser.getId());
         if (existing.isPresent()) {
             WordEntity word = existing.get();
             word.setStatus(Status.NEW);
@@ -47,22 +60,15 @@ public class WordService {
                 .status(Status.NEW)
                 .createdAt(LocalDateTime.now())
                 .repetition(10)
+                .user(currentUser)
                 .build();
 
         return wordRepository.save(word);
     }
 
-    public int getStatusPriority(Status status) {
-        return switch (status) {
-            case NEW -> 1;
-            case REPEAT -> 2;
-            case KNOWN -> 3;
-            case MASTERED -> 4;
-        };
-    }
-
     public List<WordDTO> getAllWords() {
-        return wordRepository.findAll().stream()
+        UserEntity currentUser = getCurrentUser();
+        return wordRepository.findByUser_Id(currentUser.getId()).stream()
                 .map(word -> new WordDTO(
                         word.getOriginal(),
                         word.getTranslations(),
@@ -71,7 +77,7 @@ public class WordService {
     }
 
     public List<WordDTO> getDailyRepetition(int count) {
-        List<WordDTO> allWords = new ArrayList<>(getAllWords());
+        List<WordDTO> allWords = new ArrayList<>(getAllWords());  // ← już filtruje po userze!
 
         allWords.sort(Comparator.comparingInt(wordDto ->
                 getStatusPriority(wordDto.getStatus())));
@@ -90,15 +96,13 @@ public class WordService {
     }
 
     @Transactional
-    public void clearAll() {
-        wordRepository.deleteAll();
-    }
-
-    @Transactional
     public void updateStatus(String original, Status newStatus) {
+        UserEntity currentUser = getCurrentUser();
         String normalized = original.trim().toLowerCase(Locale.ROOT);
-        WordEntity word = wordRepository.findByOriginal(normalized)
-                .orElseThrow(() -> new NoSuchElementException("Word not found: " + original));
+
+        WordEntity word = wordRepository.findByOriginalAndUser_Id(normalized, currentUser.getId())
+                .orElseThrow(() -> new NoSuchElementException("Word not found"));
+
         word.setStatus(newStatus);
         word.setRepetition(10);
         wordRepository.save(word);
@@ -106,10 +110,29 @@ public class WordService {
 
     @Transactional
     public void removeWord(String original) {
+        UserEntity currentUser = getCurrentUser();
         String normalized = original.trim().toLowerCase(Locale.ROOT);
-        if (!wordRepository.existsByOriginal(normalized)) {
-            throw new NoSuchElementException("Word not found: " + original);
+
+        if (!wordRepository.existsByOriginalAndUser_Id(normalized, currentUser.getId())) {
+            throw new NoSuchElementException("Word not found");
         }
-        wordRepository.deleteByOriginal(normalized);
+
+        wordRepository.deleteByOriginalAndUser_Id(normalized, currentUser.getId());
+    }
+
+    @Transactional
+    public void clearAll() {
+        UserEntity currentUser = getCurrentUser();
+        List<WordEntity> userWords = wordRepository.findByUser_Id(currentUser.getId());
+        wordRepository.deleteAll(userWords);
+    }
+
+    public int getStatusPriority(Status status) {
+        return switch (status) {
+            case NEW -> 1;
+            case REPEAT -> 2;
+            case KNOWN -> 3;
+            case MASTERED -> 4;
+        };
     }
 }

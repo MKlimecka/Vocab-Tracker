@@ -42,6 +42,7 @@ public class WordEntity {
     @Column(name = "repetition")
     private int repetition;
 
-    @ManyToMany(mappedBy = "words")
-    private Set<UserEntity> users = new HashSet<>();
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private UserEntity user;
 }

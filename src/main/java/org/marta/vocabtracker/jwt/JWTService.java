@@ -32,6 +32,7 @@ public class JWTService {
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
     }
+
     public String generateToken(UserDetails userDetails) {
         return generateToken(new HashMap<>(), userDetails);
     }
@@ -70,10 +71,10 @@ public class JWTService {
 
     private Claims extractAllClaims(String token) {
         return Jwts
-                .parser()  // ← zmień z parserBuilder() na parser()
-                .verifyWith((SecretKey) getSignInKey())  // ← zmień z setSigningKey
+                .parser()
+                .verifyWith(getSignInKey())
                 .build()
-                .parseSignedClaims(token)  // ← zmień z parseClaimsJws
+                .parseSignedClaims(token)
                 .getPayload();
     }
 
@@ -82,4 +83,3 @@ public class JWTService {
         return Keys.hmacShaKeyFor(keyBytes);
     }
 }
-

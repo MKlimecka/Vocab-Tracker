@@ -10,11 +10,11 @@ import java.util.UUID;
 
 public interface WordRepository extends JpaRepository<WordEntity, UUID>  {
 
-    Optional<WordEntity> findByOriginal(String original);
+    Optional<WordEntity> findByOriginalAndUser_Id(String original, UUID userId);
 
-    boolean existsByOriginal(String original);
+    boolean existsByOriginalAndUser_Id(String original, UUID userId);
 
-    void deleteByOriginal(String original);
+    void deleteByOriginalAndUser_Id(String original, UUID userId);
 
-    List<WordEntity> findByStatus(Status status);
+    List<WordEntity> findByUser_Id(UUID userId);
 }
