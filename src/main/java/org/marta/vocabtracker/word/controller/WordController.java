@@ -1,6 +1,7 @@
 package org.marta.vocabtracker.word.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.marta.vocabtracker.translation.service.TranslationService;
 import org.marta.vocabtracker.word.dto.WordDTO;
 import org.marta.vocabtracker.word.model.Status;
 import org.marta.vocabtracker.word.model.WordEntity;
@@ -17,11 +18,11 @@ import java.util.List;
 public class WordController {
 
     private final WordService wordService;
+    private final TranslationService translationService;
 
     @PostMapping
-    public ResponseEntity<WordEntity> addWord(
-            @RequestParam String word,
-            @RequestParam List<String> translations) {
+    public ResponseEntity<WordEntity> addWord(@RequestParam String word) {
+        List<String> translations = translationService.translate(word);
         WordEntity created = wordService.addWord(word, translations);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
@@ -55,4 +56,5 @@ public class WordController {
     public ResponseEntity<List<WordDTO>> getAllWords() {
         return ResponseEntity.ok(wordService.getAllWords());
     }
+
 }

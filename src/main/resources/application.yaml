@@ -5,3 +5,7 @@ spring:
     name: vocab-tracker
   profiles:
     active: dev
+translator:
+  api-url: https://libretranslate.com/translate
+  source-lang: en
+  target-lang: pl
