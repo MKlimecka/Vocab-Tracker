@@ -44,11 +44,12 @@ public class TranslationService {
                 String translation = (String) response.get("translatedText");
                 return List.of(translation);
             }
+            return List.of(text);
 
-            throw new RuntimeException("Translation failed");
 
         } catch (Exception e) {
-            throw new RuntimeException("Translation API error: " + e.getMessage());
+            System.err.println("Translation API error: " + e.getMessage());
+            return List.of(text);
         }
     }
 }
