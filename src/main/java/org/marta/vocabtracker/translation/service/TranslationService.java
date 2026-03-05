@@ -28,20 +28,22 @@ public class TranslationService {
         try {
             WebClient webClient = webClientBuilder.baseUrl(apiUrl).build();
 
-            Map<String, Object> requestBody = Map.of(
-                    "q", text,
-                    "source", sourceLang,
-                    "target", targetLang
-            );
-
-            Map<String, Object> response = webClient.post()
-                    .bodyValue(requestBody)
+            Map response = webClient.get()
+                    .uri(uriBuilder -> uriBuilder
+                            .queryParam("q", text)
+                            .queryParam("langpair", sourceLang + "|" + targetLang)
+                            .build())
                     .retrieve()
                     .bodyToMono(Map.class)
                     .block();
 
-            if (response != null && response.containsKey("translatedText")) {
-                String translation = (String) response.get("translatedText");
+            System.out.println("API RESPONSE: " + response);
+
+            if (response != null && response.containsKey("responseData")) {
+                Map responseData = (Map) response.get("responseData");
+                String translation = (String) responseData.get("translatedText");
+
+
                 return List.of(translation);
             }
             return List.of(text);

@@ -21,10 +21,15 @@ public class WordController {
     private final TranslationService translationService;
 
     @PostMapping
-    public ResponseEntity<WordEntity> addWord(@RequestParam String word) {
+    public ResponseEntity<WordDTO> addWord(@RequestParam String word) {
         List<String> translations = translationService.translate(word);
         WordEntity created = wordService.addWord(word, translations);
-        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+        WordDTO wordDto = new WordDTO(
+                created.getOriginal(),
+                created.getTranslations(),
+                created.getStatus()
+        );
+        return ResponseEntity.status(HttpStatus.CREATED).body(wordDto);
     }
 
     @GetMapping("/repetition")

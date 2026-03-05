@@ -33,6 +33,7 @@ public class WordService {
 
     @Transactional
     public WordEntity addWord(String inputWord, List<String> translationsFromAPI) {
+
         if (inputWord == null || inputWord.isBlank()) {
             throw new IllegalArgumentException("Word cannot be empty");
         }
@@ -43,25 +44,24 @@ public class WordService {
         UserEntity currentUser = getCurrentUser();
         String normalized = inputWord.trim().toLowerCase(Locale.ROOT);
 
-        Optional<WordEntity> existing = wordRepository.findByOriginalAndUser_Id(normalized, currentUser.getId());
-        if (existing.isPresent()) {
-            WordEntity word = existing.get();
-            word.setStatus(Status.NEW);
-            return wordRepository.save(word);
-        }
+        List<String> cleanedTranslations = translationsFromAPI.stream()
+                .map(String::trim)
+                .filter(t -> !t.isBlank())
+                .distinct()
+                .toList();
 
-        WordEntity word = WordEntity.builder()
-                .original(normalized)
-                .translations(translationsFromAPI.stream()
-                        .map(String::trim)
-                        .filter(t -> !t.isBlank())
-                        .distinct()
-                        .collect(Collectors.toList()))
-                .status(Status.NEW)
-                .createdAt(LocalDateTime.now())
-                .repetition(10)
-                .user(currentUser)
-                .build();
+        WordEntity word = wordRepository
+                .findByOriginalAndUser_Id(normalized, currentUser.getId())
+                .orElseGet(() -> WordEntity.builder()
+                        .original(normalized)
+                        .createdAt(LocalDateTime.now())
+                        .repetition(10)
+                        .user(currentUser)
+                        .build()
+                );
+
+        word.setStatus(Status.NEW);
+        word.setTranslations(cleanedTranslations);
 
         return wordRepository.save(word);
     }
