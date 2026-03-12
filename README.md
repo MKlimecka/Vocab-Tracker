@@ -403,7 +403,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Author
 
-Your Name - [MKLimecka](https://github.com/MKlimecka)
+[MKLimecka](https://github.com/MKlimecka)
 
 ## Acknowledgments
 
